@@ -6,6 +6,11 @@
     public interface ICommandManager
     {
         /// <summary>
+        /// A path where additional command assemblies could be found.
+        /// </summary>
+        string CommandDirectory { get; set; }
+
+        /// <summary>
         /// Verifies that a command (by name) exists
         /// </summary>
         /// <param name="name">The name of the command</param>

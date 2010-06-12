@@ -18,6 +18,11 @@ namespace PlayPen.Commands
         private Lazy<ConsoleCommandBase, IConsoleCommandMetadata>[] _commands;
 
         /// <summary>
+        /// A path where additional command assemblies could be found.
+        /// </summary>
+        public string CommandDirectory { get; set; }
+
+        /// <summary>
         /// Default Constructor
         /// </summary>
         public CommandManager()
@@ -30,7 +35,14 @@ namespace PlayPen.Commands
         /// </summary>
         private void LoadCommands()
         {
-            var catalog = new AssemblyCatalog(Assembly.GetCallingAssembly());
+            var catalog = new AggregateCatalog();
+            catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetCallingAssembly()));
+
+            if (!string.IsNullOrEmpty(CommandDirectory))
+            {
+                catalog.Catalogs.Add(new DirectoryCatalog(CommandDirectory));
+            }
+
             var container = new CompositionContainer(catalog);
             container.ComposeParts(this);
         }
