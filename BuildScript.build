@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<project name="PlayPen" default="Build-Debug" basedir=".">
+	
+	<!-- Project Directories -->
+	<property name="srcPath" value=".\src\PlayPen\" />
+	
+	<!-- Output Directories -->
+    <property name="debugPath" value=".\build\debug\" />
+    <property name="releasePath" value=".\build\release\" />
+	<property name="stagingPath" value=".\staging\" />
+	
+    <!-- Clean Debug -->
+	<target name="Clean-Debug" description="Deletes files associated with the Debug processes">
+		<delete dir="${debugPath}" />
+	</target>
+	
+    <!-- Build in Debug Mode -->
+    <target name="Build-Debug" description="Builds application's core library in debug mode." depends="Clean-Debug">
+	    <mkdir dir="${debugPath}" unless="${directory::exists('${debugPath}')}"/>
+    	
+	    <csc target="library" output="${debugPath}PlayPen.dll" debug="true">
+            <sources>
+                <include name="${srcPath}**\*.cs" />
+            </sources>
+		          <references>
+			          <include name=".\lib\System.ComponentModel.Composition.dll" />
+		          </references>
+        </csc>
+	    <copy todir="${debugPath}">
+		    <fileset basedir=".\lib\">
+			    <include name="System.ComponentModel.Composition.dll" />
+		    </fileset>			
+	    </copy>
+    </target>
+
+  
+    <!-- Clean Release -->
+	<target name="Clean-Release" description="Deletes files associated with the Release processes">
+		<delete dir="${releasePath}" />
+	</target>
+
+    <!-- Build in Release Mode -->
+	<target name="Build-Release" description="Builds the library in release mode." depends="Clean-Release">
+		<mkdir dir="${releasePath}" unless="${directory::exists('${releasePath}')}"/>
+		
+		<csc target="library" output="${releasePath}PlayPen.dll" debug="false"  optimize="true">
+            <sources>
+                <include name="${srcPath}**\*.cs" />
+            </sources>
+            <references>
+                <include name=".\lib\System.ComponentModel.Composition.dll" />
+            </references>
+        </csc>
+		<copy todir="${releasePath}">
+			<fileset basedir=".\lib\">
+				<include name="System.ComponentModel.Composition.dll" />
+			</fileset>			
+		</copy>
+	</target>
+
+    <!-- Package the Binaries -->
+	<target name="Package-Binaries" description="Packages the release compiled binaries for easy deployment." depends="Build-Release">
+		<mkdir dir="${stagingPath}" unless="${directory::exists('${stagingPath}')}"/>
+		<zip zipfile="${stagingPath}PlayPen-Binaries.zip">
+			<fileset basedir="${releasePath}">
+				<include name="**/*" />
+				<exclude name="**/**.zip" />
+			</fileset>
+            <fileset basedir=".">
+                <include name=".\*license*.txt" />
+            </fileset>
+
+        </zip>
+	</target>
+	
+    <!-- Package the Source Files -->
+	<target name="Package-Source" description="Packages the  source code for easy deployment.">
+		<mkdir dir="${stagingPath}" unless="${directory::exists('${stagingPath}')}"/>
+		<zip zipfile="${stagingPath}PlayPen-Source.zip">
+			<fileset basedir=".">
+				<include name="**/*.sln" />
+				<include name="**/*.build" />
+                <include name="**/*.bat" />
+				<include name="**/*.config" />
+				<include name="**/*.cs" />
+				<include name="**/*.csproj" />
+                <include name="./*license*.txt" />
+                <include name="./lib/System.ComponentModel.Composition.dll" />
+				<exclude name="**/bin/**/*" />
+				<exclude name="**/obj/**/*" />
+				<exclude name="**/build/**/*" />
+                
+			</fileset>
+		</zip>
+	</target>
+	
+    <!-- Package Source Files and Binaries -->
+	<target name="Package-All" description="Packages the application source code and binaries into separate zip files for easy staging.">
+		<call target="Package-Binaries" />
+		<call target="Package-Source" />
+	</target>
+</project>
